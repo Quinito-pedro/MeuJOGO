@@ -456,13 +456,18 @@ function atualizarVidas() {
   function mostrarGameOver() {
   const container = document.querySelector(".game-box");
   container.innerHTML = `
-  <div class="fade-in">
-    <h2>💀 Game Over</h2>
-    <p>Você perdeu todas as vidas!</p>
-    <p>Sua pontuação final foi: <strong>${pontuacao}</strong></p>
-    <button onclick="resetarJogo()">🔁 Jogar Novamente</button>
-  </div>
-`;
+    <div class="fade-in">
+      <h2>💀 Game Over</h2>
+      <p>Você perdeu todas as vidas!</p>
+      <p>Sua pontuação final foi: <strong>${pontuacao}</strong></p>
+      <button id="btn-jogar-novamente">🔁 Jogar Novamente</button>
+    </div>
+  `;
+
+  // Registra o evento de clique no botão após ele existir no DOM
+  document.getElementById("btn-jogar-novamente").addEventListener("click", () => {
+    resetarJogo();
+  });
 }
   function resetarJogo() {
   pontuacao = 0;
@@ -471,15 +476,17 @@ function atualizarVidas() {
   localStorage.setItem("pontuacao", pontuacao);
   localStorage.setItem("nivel", nivel);
   localStorage.setItem("vidas", vidas);
-  document.getElementById("score").textContent = `Pontuação: ${pontuacao}`;
-  document.getElementById("level").textContent = `Nível: ${nivel}`;
-  atualizarVidas();
   acertosNivel = [];
   errosNivel = [];
   palavrasRestantes = [];
+
+  iniciarInterfaceDoJogo();
+  atualizarVidas();
+  atualizarNivel();
+  document.getElementById("score").textContent = `Pontuação: ${pontuacao}`;
   novaPalavra();
 }
-  
+
 function mostrarResumoNivel() {
   const container = document.querySelector(".game-box");
   container.innerHTML = `<div class="fade-in"><h2>📊 Resumo do Nível ${nivel}</h2>`;
@@ -578,13 +585,12 @@ function irParaNivel(num) {
   acertosNivel = [];
   errosNivel = [];
   palavrasRestantes = [];
-
+  
   iniciarInterfaceDoJogo();
   atualizarNivel();
   atualizarVidas();
   novaPalavra();
 }
-
   window.onload = () => {
   pontuacao = parseInt(localStorage.getItem("pontuacao")) || 0;
   nivel = parseInt(localStorage.getItem("nivel")) || 1;
@@ -595,7 +601,6 @@ function irParaNivel(num) {
   atualizarVidas();
   novaPalavra();
 };
-
   function repetirNivel() {
   acertosNivel = [];
   errosNivel = [];
@@ -607,7 +612,6 @@ function irParaNivel(num) {
       <h2>🔁 Reiniciando Nível ${nivel}...</h2>
     </div>
   `;
-
   // Espera um pouco para mostrar a animação e volta ao nível
   setTimeout(() => {
     iniciarInterfaceDoJogo();
@@ -635,6 +639,5 @@ function voltarParaResumo() {
   mostrarResumoNivel();
 }
   </script>
-
 </body>
 </html>
