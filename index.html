@@ -160,6 +160,7 @@ button:active {
   </div>
 
   <script>
+    let nivelConcluido = parseInt(localStorage.getItem("nivelConcluido")) || 1;
     let acertosNivel = [];
 let errosNivel = [];
 let palavrasRestantes = [];
@@ -506,44 +507,63 @@ function mostrarResumoNivel() {
   function avancarNivel() {
   if (nivel < 10) {
     nivel++;
-    
-    if (nivel > nivelConcluido) {
-      nivelConcluido = nivel;
-      localStorage.setItem("nivelConcluido", nivelConcluido);
-    }
-
     localStorage.setItem("nivel", nivel);
     acertosNivel = [];
     errosNivel = [];
     palavrasRestantes = [];
 
     const container = document.querySelector(".game-box");
+
+    // Mostra mensagem de carregamento
     container.innerHTML = `
       <div class="fade-in">
         <h2>⏳ Carregando Nível ${nivel}...</h2>
       </div>
     `;
 
+    // Espera 5 segundos e inicia diretamente o novo nível (sem voltar ao resumo)
     setTimeout(() => {
+      iniciarInterfaceDoJogo();
       atualizarNivel();
+      atualizarVidas();
       novaPalavra();
-    }, 1000);
+    }, 5000);
   }
 }
-  function abrirMenuNiveis() {
+
+function abrirMenuNiveis() {
   const container = document.querySelector(".game-box");
   container.innerHTML = `<h2>🗺️ Mapa de Níveis</h2>`;
 
   let html = "<div style='display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;'>";
+
   for (let i = 1; i <= 10; i++) {
-    const desbloqueado = i <= nivel;
-    html += `<button ${desbloqueado ? "" : "disabled style='opacity:0.3; cursor: not-allowed;'"} onclick="irParaNivel(${i})">
-      ${desbloqueado ? `Nível ${i}` : `🔒 Nível ${i}`}
+    let label = "";
+    let disabled = true;
+
+    if (i < nivel) {
+      label = `✅ Nível ${i}`;      // níveis já concluídos
+      disabled = true;             // bloqueados para clique (pode liberar se quiser)
+    } else if (i === nivel) {
+      label = `🟢 Nível ${i}`;      // nível atual
+      disabled = false;
+    } else if (i === nivel + 1) {
+      label = `🟡 Nível ${i}`;      // próximo nível desbloqueado
+      disabled = false;
+    } else {
+      label = `🔒 Nível ${i}`;      // níveis bloqueados
+      disabled = true;
+    }
+
+    html += `<button ${disabled ? "disabled style='opacity:0.3; cursor:not-allowed;'" : ""} onclick="irParaNivel(${i})">
+      ${label}
     </button>`;
   }
+
   html += "</div>";
   container.innerHTML += html + `<br><button onclick="voltarParaResumo()">⬅️ Voltar ao Resumo</button>`;
 }
+
 function voltarAoJogo() {
   mostrarResumoNivel();
 }
@@ -551,20 +571,31 @@ function voltarAoJogo() {
 function irParaNivel(num) {
   nivel = num;
   localStorage.setItem("nivel", nivel);
+  if (nivel > nivelConcluido) {
+    nivelConcluido = nivel;
+    localStorage.setItem("nivelConcluido", nivelConcluido);
+  }
   acertosNivel = [];
   errosNivel = [];
   palavrasRestantes = [];
+
+  iniciarInterfaceDoJogo();
   atualizarNivel();
+  atualizarVidas();
   novaPalavra();
 }
 
+  window.onload = () => {
+  pontuacao = parseInt(localStorage.getItem("pontuacao")) || 0;
+  nivel = parseInt(localStorage.getItem("nivel")) || 1;
+  nivelConcluido = parseInt(localStorage.getItem("nivelConcluido")) || nivel;
 
-window.onload = () => {
   document.getElementById("score").textContent = `Pontuação: ${pontuacao}`;
   atualizarNivel();
   atualizarVidas();
   novaPalavra();
 };
+
   function repetirNivel() {
   acertosNivel = [];
   errosNivel = [];
