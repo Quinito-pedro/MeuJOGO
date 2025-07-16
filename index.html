@@ -21,6 +21,7 @@
     50% { background-position: 100% 50%; }
     100% { background-position: 0% 50%; }
   }
+  
   .palavra-container {
   display: flex;
   align-items: center;
@@ -49,6 +50,10 @@
 .btn-ouvir:hover {
   transform: scale(1.05);
 }
+.btn-ouvir:active {
+  transform: scale(0.95);
+}
+
 
 .btn-ouvir:active {
   transform: scale(0.95);
@@ -202,9 +207,11 @@
     <div class="vidas" id="vidas">Vidas: ❤️❤️❤️</div>
     <p id="instrucoes">Traduza de <strong>Português</strong> para <strong>Inglês</strong>:</p>
     <div class="palavra-container">
+      <div class="palavra-container" id="palavraContainer">
   <h2 id="word">...</h2>
   <button class="btn-ouvir" onclick="falarPalavra()">🔊 Ouvir</button>
 </div>
+    </div>
     <div class="options" id="options"></div>
     <div class="feedback" id="feedback"></div>
     <div class="score" id="score">Pontuação: 0</div>
@@ -217,9 +224,9 @@
     let acertosNivel = [];
 let errosNivel = [];
 let palavrasRestantes = [];
-
-    const somAcerto = new Audio("acerto.mp3");
-    const somErro = new Audio("erro.mp3");
+const somAcerto = new Audio("acerto.mp3");
+const somErro = new Audio("erro.mp3");
+const somVitoria = new Audio("vitoria.mp3"); // ✅ novo som de vitória
 
     const nivel1 = [ { pt: "casa", en: "house" }, { pt: "gato", en: "cat" }, { pt: "livro", en: "book" }, { pt: "maçã", en: "apple" }, { pt: "carro", en: "car" }, { pt: "sol", en: "sun" }, { pt: "água", en: "water" }, { pt: "mesa", en: "table" }];
     const nivel2 = [ { pt: "janela", en: "window" }, { pt: "cachorro", en: "dog" }, { pt: "telefone", en: "phone" }, { pt: "estrada", en: "road" }, { pt: "caneta", en: "pen" }, { pt: "verde", en: "green" }, { pt: "fruta", en: "fruit" }, { pt: "noite", en: "night" }];
@@ -321,7 +328,7 @@ function atualizarVidas() {
       speechSynthesis.speak(utterance);
     }
 
-    function novaPalavra() {
+   function novaPalavra() {
   atualizarNivel();
   const lista = niveis[nivel];
   palavrasRestantes = palavrasRestantes.length ? palavrasRestantes : [...lista];
@@ -330,41 +337,53 @@ function atualizarVidas() {
     mostrarResumoNivel();
     return;
   }
+
   palavraAtual = palavrasRestantes.splice(Math.floor(Math.random() * palavrasRestantes.length), 1)[0];
   document.getElementById("feedback").textContent = "";
+  document.getElementById("options").innerHTML = "";
+  document.getElementById("answerBox")?.remove();
+
+  const palavraContainer = document.getElementById("palavraContainer");
+  const wordElement = document.getElementById("word");
 
   // Nível 5 e 10: Diálogo com múltiplas opções
   if (nivel === 5 || nivel === 10) {
-    document.getElementById("word").textContent = palavraAtual.dialogo;
+    palavraAtual.exibir = palavraAtual.dialogo;
+    wordElement.textContent = palavraAtual.exibir;
+    palavraContainer.style.display = "flex";
     gerarDialogoOpcoes();
     return;
   }
+
   // Nível 6 e 9: Pergunta com input manual
   if (nivel === 6 || nivel === 9) {
-    document.getElementById("word").textContent = palavraAtual.pergunta;
+    palavraAtual.exibir = palavraAtual.pergunta;
+    wordElement.textContent = palavraAtual.exibir;
+    palavraContainer.style.display = "flex";
     gerarInputManual(true);
     return;
   }
+
   // Nível 1: mostrar em pt → opções em en
   if (nivel === 1) {
     palavraAtual.exibir = palavraAtual.pt;
     palavraAtual.esperada = palavraAtual.en;
-    document.getElementById("word").textContent = palavraAtual.exibir;
-    document.getElementById("options").style.display = "flex";
-    document.getElementById("answerBox")?.remove();
-    gerarOpcoes(lista, "en"); // opções em inglês
+    wordElement.textContent = palavraAtual.exibir;
+    palavraContainer.style.display = "flex";
+    gerarOpcoes(lista, "en");
     return;
   }
+
   // Nível 2: mostrar em en → opções em pt
   if (nivel === 2) {
     palavraAtual.exibir = palavraAtual.en;
     palavraAtual.esperada = palavraAtual.pt;
-    document.getElementById("word").textContent = palavraAtual.exibir;
-    document.getElementById("options").style.display = "flex";
-    document.getElementById("answerBox")?.remove();
-    gerarOpcoes(lista, "pt"); // opções em português
+    wordElement.textContent = palavraAtual.exibir;
+    palavraContainer.style.display = "flex";
+    gerarOpcoes(lista, "pt");
     return;
   }
+
   // Nível 3: alternar exibição pt/en e opções en/pt
   if (nivel === 3) {
     const indexPar = (acertosNivel.length + errosNivel.length) % 2 === 0;
@@ -372,28 +391,27 @@ function atualizarVidas() {
     palavraAtual.esperada = indexPar ? palavraAtual.en : palavraAtual.pt;
     const idiomaOpcoes = indexPar ? "en" : "pt";
 
-    document.getElementById("word").textContent = palavraAtual.exibir;
-    document.getElementById("options").style.display = "flex";
-    document.getElementById("answerBox")?.remove();
+    wordElement.textContent = palavraAtual.exibir;
+    palavraContainer.style.display = "flex";
     gerarOpcoes(lista, idiomaOpcoes);
     return;
   }
 
-  // Nível 4, 7, 8: aleatório como antes
-  let mostrar = Math.random() < 0.5 ? "pt" : "en";
+  // Nível 4, 7, 8: aleatório pt/en com input ou opções
+  const mostrar = Math.random() < 0.5 ? "pt" : "en";
   palavraAtual.exibir = palavraAtual[mostrar];
   palavraAtual.esperada = mostrar === "pt" ? palavraAtual.en : palavraAtual.pt;
 
-  document.getElementById("word").textContent = palavraAtual.exibir;
+  wordElement.textContent = palavraAtual.exibir;
+  palavraContainer.style.display = "flex";
 
   if (nivel === 7 || nivel === 8) {
-    document.getElementById("options").style.display = "flex";
-    document.getElementById("answerBox")?.remove();
     gerarOpcoes(lista, mostrar === "pt" ? "en" : "pt");
   } else {
     gerarInputManual(false);
   }
 }
+
     function gerarOpcoes(lista, idiomaOpcao) {
   const container = document.getElementById("options");
   container.innerHTML = "";
@@ -541,6 +559,8 @@ function atualizarVidas() {
 }
 
 function mostrarResumoNivel() {
+  somVitoria.play(); // ✅ toca som de vitória ao abrir o resumo
+
   const container = document.querySelector(".game-box");
   container.innerHTML = `<div class="fade-in"><h2>📊 Resumo do Nível ${nivel}</h2>`;
 
@@ -682,8 +702,10 @@ function iniciarInterfaceDoJogo() {
   container.innerHTML = `
     <div class="vidas" id="vidas">Vidas: ❤️❤️❤️</div>
     <p id="instrucoes">Traduza de <strong>Português</strong> para <strong>Inglês</strong>:</p>
-    <h2 id="word">...</h2>
-    <button onclick="falarPalavra()">🔊 Ouvir Pronúncia</button>
+    <div class="palavra-container" id="palavraContainer">
+      <h2 id="word">...</h2>
+      <button class="btn-ouvir" onclick="falarPalavra()">🔊 Ouvir</button>
+    </div>
     <div class="options" id="options"></div>
     <div class="feedback" id="feedback"></div>
     <div class="score" id="score">Pontuação: ${pontuacao}</div>
@@ -691,6 +713,7 @@ function iniciarInterfaceDoJogo() {
     <button onclick="resetarJogo()">🔄 Resetar Jogo</button>
   `;
 }
+
 function voltarParaResumo() {
   mostrarResumoNivel();
 }
