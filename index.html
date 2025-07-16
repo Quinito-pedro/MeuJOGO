@@ -21,6 +21,39 @@
     50% { background-position: 100% 50%; }
     100% { background-position: 0% 50%; }
   }
+  .palavra-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.palavra-container h2 {
+  font-size: 1.8rem;
+  margin: 0;
+}
+
+.btn-ouvir {
+  padding: 8px 12px;
+  font-size: 1rem;
+  background-color: #ffc107;
+  border: none;
+  border-radius: 5px;
+  color: black;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.btn-ouvir:hover {
+  transform: scale(1.05);
+}
+
+.btn-ouvir:active {
+  transform: scale(0.95);
+}
+
 
   h1 {
     font-size: 2rem;
