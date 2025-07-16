@@ -133,6 +133,14 @@ button:active {
   from { opacity: 0; transform: scale(0.95); }
   to { opacity: 1; transform: scale(1); }
 }
+  .fade-in {
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
 </style>
 </head>
 <body>
@@ -152,7 +160,7 @@ button:active {
   </div>
 
   <script>
-     let acertosNivel = [];
+    let acertosNivel = [];
 let errosNivel = [];
 let palavrasRestantes = [];
 
@@ -176,7 +184,6 @@ let palavrasRestantes = [];
       { pergunta: "A: How old are you?\nB: _____", resposta: "I am 25 years old" },
       { pergunta: "A: What do you do?\nB: _____", resposta: "I am a student" }
     ];
-
     const nivel7 = [
   { pt: "trabalho", en: "work" },
   { pt: "dinheiro", en: "money" },
@@ -187,7 +194,6 @@ let palavrasRestantes = [];
   { pt: "viagem", en: "travel" },
   { pt: "cultura", en: "culture" }
 ];
-
 const nivel8 = [
   { pt: "felicidade", en: "happiness" },
   { pt: "tristeza", en: "sadness" },
@@ -198,19 +204,16 @@ const nivel8 = [
   { pt: "paz", en: "peace" },
   { pt: "respeito", en: "respect" }
 ];
-
 const nivel9 = [
   { pergunta: "A: Can you help me?\nB: _____", resposta: "Yes, of course." },
   { pergunta: "A: Where is the bank?\nB: _____", resposta: "It is on Main Street." },
   { pergunta: "A: What is your favorite food?\nB: _____", resposta: "I love pizza." }
 ];
-
 const nivel10 = [
   { dialogo: "A: What are you doing tomorrow?\nB: _____", correta: "I'm going to the beach." },
   { dialogo: "A: Have you been to Paris?\nB: _____", correta: "Yes, once." },
   { dialogo: "A: Do you like music?\nB: _____", correta: "Yes, very much." }
 ];
-
 const niveis = {
   1: nivel1,
   2: nivel2,
@@ -235,17 +238,6 @@ function atualizarVidas() {
     let palavraAtual;
 
     function atualizarNivel() {
-  if (pontuacao < 5) nivel = 1;
-  else if (pontuacao < 10) nivel = 2;
-  else if (pontuacao < 15) nivel = 3;
-  else if (pontuacao < 20) nivel = 4;
-  else if (pontuacao < 25) nivel = 5;
-  else if (pontuacao < 30) nivel = 6;
-  else if (pontuacao < 35) nivel = 7;
-  else if (pontuacao < 40) nivel = 8;
-  else if (pontuacao < 45) nivel = 9;
-  else nivel = 10;
-
   localStorage.setItem("nivel", nivel);
   const nivelEl = document.getElementById("level");
   nivelEl.textContent = `Nível: ${nivel}`;
@@ -284,7 +276,6 @@ function atualizarVidas() {
     mostrarResumoNivel();
     return;
   }
-
   palavraAtual = palavrasRestantes.splice(Math.floor(Math.random() * palavrasRestantes.length), 1)[0];
   document.getElementById("feedback").textContent = "";
 
@@ -294,14 +285,12 @@ function atualizarVidas() {
     gerarDialogoOpcoes();
     return;
   }
-
   // Nível 6 e 9: Pergunta com input manual
   if (nivel === 6 || nivel === 9) {
     document.getElementById("word").textContent = palavraAtual.pergunta;
     gerarInputManual(true);
     return;
   }
-
   // Nível 1: mostrar em pt → opções em en
   if (nivel === 1) {
     palavraAtual.exibir = palavraAtual.pt;
@@ -312,7 +301,6 @@ function atualizarVidas() {
     gerarOpcoes(lista, "en"); // opções em inglês
     return;
   }
-
   // Nível 2: mostrar em en → opções em pt
   if (nivel === 2) {
     palavraAtual.exibir = palavraAtual.en;
@@ -323,7 +311,6 @@ function atualizarVidas() {
     gerarOpcoes(lista, "pt"); // opções em português
     return;
   }
-
   // Nível 3: alternar exibição pt/en e opções en/pt
   if (nivel === 3) {
     const indexPar = (acertosNivel.length + errosNivel.length) % 2 === 0;
@@ -418,7 +405,7 @@ function atualizarVidas() {
       verificarResposta(resposta, correta);
     }
 
-    function verificarResposta(resposta, corretaManual = null) {
+   function verificarResposta(resposta, corretaManual = null) {
   const correta = corretaManual || palavraAtual.esperada;
   const isCorreta = resposta.toLowerCase().trim() === correta.toLowerCase().trim();
 
@@ -455,10 +442,16 @@ function atualizarVidas() {
   if (vidas <= 0) {
     setTimeout(mostrarGameOver, 1500);
   } else {
-    setTimeout(novaPalavra, 1500);
+    const totalNivel = niveis[nivel].length;
+    const respondidas = acertosNivel.length + errosNivel.length;
+
+    if (respondidas >= totalNivel) {
+      setTimeout(mostrarResumoNivel, 1000); // Mostra resumo com delay para o usuário ver o feedback
+    } else {
+      setTimeout(novaPalavra, 1000); // Carrega a próxima palavra com delay
+    }
   }
 }
-
   function mostrarGameOver() {
   const container = document.querySelector(".game-box");
   container.innerHTML = `
@@ -469,7 +462,6 @@ function atualizarVidas() {
     <button onclick="resetarJogo()">🔁 Jogar Novamente</button>
   </div>
 `;
-
 }
   function resetarJogo() {
   pontuacao = 0;
@@ -481,15 +473,15 @@ function atualizarVidas() {
   document.getElementById("score").textContent = `Pontuação: ${pontuacao}`;
   document.getElementById("level").textContent = `Nível: ${nivel}`;
   atualizarVidas();
+  acertosNivel = [];
+  errosNivel = [];
+  palavrasRestantes = [];
   novaPalavra();
 }
-
-
-    function mostrarResumoNivel() {
+  
+function mostrarResumoNivel() {
   const container = document.querySelector(".game-box");
   container.innerHTML = `<div class="fade-in"><h2>📊 Resumo do Nível ${nivel}</h2>`;
-// Depois feche com </div> no final do conteúdo.
-container.innerHTML += ` ... </div>`;
 
   const acertosHTML = acertosNivel.map(p =>
     `<li>✔️ ${p.pt || p.pergunta || p.dialogo} → <strong>${p.en || p.resposta || p.correta}</strong></li>`
@@ -506,24 +498,39 @@ container.innerHTML += ` ... </div>`;
     <h3>❌ Erros:</h3>
     <ul style="text-align: left; font-size: 0.95rem;">${errosHTML || "<li>Nenhum erro.</li>"}</ul>
 
-    <button onclick="continuarOuEscolherNivel()">➡️ Continuar</button>
     <button onclick="abrirMenuNiveis()">📚 Menu de Níveis</button>
-  `;
+    <button onclick="repetirNivel()">🔁 Repetir este Nível</button>
+    ${nivel < 10 ? `<button onclick="avancarNivel()">⏭️ Próximo Nível</button>` : ""}
+  </div>`;
 }
-  function continuarOuEscolherNivel() {
-  nivel++;
-  if (nivel > 10) nivel = 10;
+  function avancarNivel() {
+  if (nivel < 10) {
+    nivel++;
+    
+    if (nivel > nivelConcluido) {
+      nivelConcluido = nivel;
+      localStorage.setItem("nivelConcluido", nivelConcluido);
+    }
 
-  acertosNivel = [];
-  errosNivel = [];
-  palavrasRestantes = [];
+    localStorage.setItem("nivel", nivel);
+    acertosNivel = [];
+    errosNivel = [];
+    palavrasRestantes = [];
 
-  localStorage.setItem("nivel", nivel);
-  atualizarNivel();
-  novaPalavra();
+    const container = document.querySelector(".game-box");
+    container.innerHTML = `
+      <div class="fade-in">
+        <h2>⏳ Carregando Nível ${nivel}...</h2>
+      </div>
+    `;
+
+    setTimeout(() => {
+      atualizarNivel();
+      novaPalavra();
+    }, 1000);
+  }
 }
-
-function abrirMenuNiveis() {
+  function abrirMenuNiveis() {
   const container = document.querySelector(".game-box");
   container.innerHTML = `<h2>🗺️ Mapa de Níveis</h2>`;
 
@@ -535,11 +542,13 @@ function abrirMenuNiveis() {
     </button>`;
   }
   html += "</div>";
-
-  container.innerHTML += html + `<br><button onclick="novaPalavra()">⬅️ Voltar ao Jogo</button>`;
+  container.innerHTML += html + `<br><button onclick="voltarParaResumo()">⬅️ Voltar ao Resumo</button>`;
+}
+function voltarAoJogo() {
+  mostrarResumoNivel();
 }
 
-  function irParaNivel(num) {
+function irParaNivel(num) {
   nivel = num;
   localStorage.setItem("nivel", nivel);
   acertosNivel = [];
@@ -548,13 +557,52 @@ function abrirMenuNiveis() {
   atualizarNivel();
   novaPalavra();
 }
+
+
 window.onload = () => {
   document.getElementById("score").textContent = `Pontuação: ${pontuacao}`;
   atualizarNivel();
   atualizarVidas();
   novaPalavra();
 };
+  function repetirNivel() {
+  acertosNivel = [];
+  errosNivel = [];
+  palavrasRestantes = [];
 
+  const container = document.querySelector(".game-box");
+  container.innerHTML = `
+    <div class="fade-in">
+      <h2>🔁 Reiniciando Nível ${nivel}...</h2>
+    </div>
+  `;
+
+  // Espera um pouco para mostrar a animação e volta ao nível
+  setTimeout(() => {
+    iniciarInterfaceDoJogo();
+    atualizarNivel();
+    atualizarVidas();
+    novaPalavra();
+  }, 2000); // espera 2 segundos para feedback visual
+}
+
+function iniciarInterfaceDoJogo() {
+  const container = document.querySelector(".game-box");
+  container.innerHTML = `
+    <div class="vidas" id="vidas">Vidas: ❤️❤️❤️</div>
+    <p id="instrucoes">Traduza de <strong>Português</strong> para <strong>Inglês</strong>:</p>
+    <h2 id="word">...</h2>
+    <button onclick="falarPalavra()">🔊 Ouvir Pronúncia</button>
+    <div class="options" id="options"></div>
+    <div class="feedback" id="feedback"></div>
+    <div class="score" id="score">Pontuação: ${pontuacao}</div>
+    <div class="level" id="level">Nível: ${nivel}</div>
+    <button onclick="resetarJogo()">🔄 Resetar Jogo</button>
+  `;
+}
+function voltarParaResumo() {
+  mostrarResumoNivel();
+}
   </script>
 
 </body>
